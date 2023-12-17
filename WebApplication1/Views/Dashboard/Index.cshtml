@@ -1,0 +1,148 @@
+﻿@model WebApplication1.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<style>
+    .full-width {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        padding: 20px;
+    }
+</style>
+
+<div class="full-width">
+    <div class="row">
+        <!-- Products Section -->
+        <div class="col-md-6">
+            <h2>Products</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Add to Cart</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model.Products)
+                    {
+                        <tr>
+                            <td>@product.Name</td>
+                            <td>₱@product.Price</td>
+                            <td>
+                                <button class="btn btn-primary add-to-cart" data-product-id="@product.ProductId">Add to Cart</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cart Items Section -->
+        <div class="col-md-6">
+            <h2>Cart</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.CartItems)
+                    {
+                        <tr>
+                            <td>@item.ProductName</td>
+                            <td>₱@item.Price</td>
+                            <td>
+                                <input type="number" class="form-control quantity" style="width: 60px;" data-product-id="@item.ProductId" value="@item.Quantity" min="1" />
+                            </td>
+                            <td>₱@(item.Price * item.Quantity)</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary update-quantity d-inline-block" data-product-id="@item.ProductId">Update</button>
+                                <button class="btn btn-sm btn-danger remove-from-cart d-inline-block" data-product-id="@item.ProductId">Remove</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (Model.CartItems.Any())
+            {
+                <a href="@Url.Action("Checkout", "Dashboard")" class="btn btn-success">Proceed to Checkout</a>
+                <p>Grand Total: ₱@Model.CartItems.Sum(item => item.Price * item.Quantity)</p>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $(".add-to-cart").click(function () {
+            var productId = $(this).data("product-id");
+            $.ajax({
+                url: "/Dashboard/AddToCart",
+                method: "POST",
+                data: { productId: productId },
+                success: function (result) {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert("Error adding item to cart.");
+                    }
+                },
+                error: function () {
+                    alert("Error adding item to cart.");
+                }
+            });
+        });
+
+        $(".remove-from-cart").click(function () {
+            var productId = $(this).data("product-id");
+            $.ajax({
+                url: "/Dashboard/RemoveFromCart",
+                method: "DELETE",
+                data: { productId: productId },
+                success: function (result) {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert("Error removing item from cart.");
+                    }
+                },
+                error: function () {
+                    alert("Error removing item from cart.");
+                }
+            });
+        });
+
+        $(".update-quantity").click(function () {
+            var productId = $(this).data("product-id");
+            var quantity = $(this).closest('tr').find('.quantity').val();
+
+            $.ajax({
+                url: "/Dashboard/UpdateQuantity",
+                method: "PUT",
+                data: { productId: productId, quantity: quantity },
+                success: function (result) {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert("Error updating item quantity.");
+                    }
+                },
+                error: function () {
+                    alert("Error updating item quantity.");
+                }
+            });
+        });
+    });
+</script>

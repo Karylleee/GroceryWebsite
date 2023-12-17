@@ -1,0 +1,31 @@
+﻿@model IEnumerable<WebApplication1.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<h2>Checkout</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>₱@item.Price</td>
+                <td>@item.Quantity</td>
+                <td>₱@(item.Price * item.Quantity)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>Grand Total: ₱@Model.Sum(item => item.Price * item.Quantity)</p>
